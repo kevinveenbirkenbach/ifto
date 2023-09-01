@@ -1,0 +1,30 @@
+name: Pull Request Pipeline
+
+on: [pull_request]
+
+jobs:
+  code-style:
+    runs-on: ubuntu-latest
+    permissions:
+      # Allow `stefanzweifel/git-auto-commit-action@v4` to commit and push changes back to the repository.
+      contents: write
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        with:
+          # avoid checking out the repository in a detached state so that `stefanzweifel/git-auto-commit-action` can
+          # commit and push changes
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Format code
+        run: bin/php-cs-fixer fix --allow-risky=yes
+
+      - name: Commit code changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Fix code style
